@@ -1,10 +1,10 @@
 const int rxPin = 7;          
-const unsigned int baud = 9600;
+const unsigned int baud = 19200;
 const unsigned int bitPeriod = 1000000 / baud;
 
 void setup() {
-  pinMode(rxPin, INPUT);
-  Serial.begin(9600); // usa UART nativa só pro debug com o PC
+  pinMode(rxPin, INPUT_PULLUP);
+  Serial.begin(19200); // usa UART nativa só pro debug com o PC
 }
 
 int calculaParidade(byte data) {
@@ -22,7 +22,7 @@ byte recebeByte() {
 
   delayMicroseconds(bitPeriod + bitPeriod/2); // pula metade + 1 bit p/ centro do bit 0
 
-  for (int i = 0; i < 8; i++) {               // lê 8 bits (LSB→MSB)
+  for (int i = 0; i < 8; i++) {               // lê 8 bits
     int bitVal = digitalRead(rxPin);
     data |= (bitVal << i);
     delayMicroseconds(bitPeriod);
