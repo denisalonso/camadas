@@ -23,25 +23,25 @@ def compute_fft(x, fs, window=None, nfft=None, return_complex=False):
     N = x.size
 
     # janela
-    if window is None:
-        w = np.ones(N)
-    else:
-        if window.lower() == 'hann':
-            w = np.hanning(N)
-        elif window.lower() == 'hamming':
-            w = np.hamming(N)
-        elif window.lower() == 'blackman':
-            w = np.blackman(N)
-        else:
-            raise ValueError("Janela desconhecida: use 'hann', 'hamming', 'blackman' ou None")
+    # if window is None:
+    #     w = np.ones(N)
+    # else:
+    if window.lower() == 'hann':
+        w = np.hanning(N)
+    elif window.lower() == 'hamming':
+        w = np.hamming(N)
+    elif window.lower() == 'blackman':
+        w = np.blackman(N)
+    # else:
+    #     raise ValueError("Janela desconhecida: use 'hann', 'hamming', 'blackman' ou None")
 
     xw = x * w
 
     # nfft
     if nfft is None:
         nfft = N
-    elif nfft < N:
-        raise ValueError("nfft deve ser >= N (ou None)")
+    # elif nfft < N:
+    #     raise ValueError("nfft deve ser >= N (ou None)")
 
     # FFT unilateral com numpy.rfft
     X = np.fft.rfft(xw, n=nfft)
@@ -71,7 +71,7 @@ def plot_time_and_spectrum(t, x, fs, freqs, magnitude, magnitude_db, title_suffi
     plt.figure(figsize=(12, 8))
 
     # Plot Tempo
-    plt.subplot(3, 1, 1)
+    plt.subplot(2, 1, 1)
     plt.plot(t, x)
     plt.xlabel('Tempo (s)')
     plt.ylabel('Amplitude')
@@ -79,7 +79,7 @@ def plot_time_and_spectrum(t, x, fs, freqs, magnitude, magnitude_db, title_suffi
     plt.grid(True)
     
     # Plot Espectro Linear
-    plt.subplot(3, 1, 2)
+    plt.subplot(2, 1, 2)
     plt.plot(freqs, magnitude)
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('Magnitude (linear)')
@@ -87,15 +87,15 @@ def plot_time_and_spectrum(t, x, fs, freqs, magnitude, magnitude_db, title_suffi
     plt.xlim(0, 1500) # Foco na região de interesse
     plt.grid(True)
     
-    # Plot Espectro dB
-    plt.subplot(3, 1, 3)
-    plt.plot(freqs, magnitude_db)
-    plt.xlabel('Frequência (Hz)')
-    plt.ylabel('Magnitude (dB)')
-    plt.title(f'Espectro de frequência (dB) {title_suffix}')
-    plt.xlim(0, 1500) # Foco na região de interesse
-    plt.ylim(np.max(magnitude_db) - 60, np.max(magnitude_db) + 5) # Foco nos picos
-    plt.grid(True)
+    # # Plot Espectro dB
+    # plt.subplot(3, 1, 3)
+    # plt.plot(freqs, magnitude_db)
+    # plt.xlabel('Frequência (Hz)')
+    # plt.ylabel('Magnitude (dB)')
+    # plt.title(f'Espectro de frequência (dB) {title_suffix}')
+    # plt.xlim(0, 1500) # Foco na região de interesse
+    # plt.ylim(np.max(magnitude_db) - 60, np.max(magnitude_db) + 5) # Foco nos picos
+    # plt.grid(True)
     
     plt.tight_layout()
     # Não usamos plt.show() aqui para permitir que o script principal o faça

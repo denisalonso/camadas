@@ -6,8 +6,8 @@ from fft_utils import ACCORDS, compute_fft, find_prominent_peaks, map_peaks_to_c
 
 # --- CONFIGURAÇÃO ---
 FS = 44100      # Frequência de amostragem
-DURATION = 5.0  # Duração da gravação em segundos (deve ser maior que a emissão)
-DELAY = 3       # Tempo para iniciar a gravação após o início do script
+DURATION = 3.0  # Duração da gravação em segundos (deve ser maior que a emissão)
+DELAY = 0      # Tempo para iniciar a gravação após o início do script
 
 # --- MAIN RECEPTOR ---
 def receiver_main():

@@ -6,7 +6,7 @@ from fft_utils import ACCORDS, compute_fft, generate_chord, plot_time_and_spectr
 
 # --- CONFIGURAÇÃO ---
 FS = 44100 # Frequência de amostragem
-DURATION = 3.0 # Duração da emissão em segundos
+DURATION = 8.0 # Duração da emissão em segundos
 
 # --- MAIN EMISSOR ---
 def emitter_main():
