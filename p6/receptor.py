@@ -23,13 +23,7 @@ def receiver_main():
     # Gravação do sinal
     print(f"Gravação iniciada por {DURATION} segundos em {FS} Hz...")
     
-    # COMENTÁRIO PARA ADAPTAÇÃO AO ANALOG DISCOVERY (RECEPTOR/OSCILOSCÓPIO)
-    #
-    # Se for usar o Analog Discovery:
-    # 1. Inicialize a biblioteca DWF: dwf.FDwfDeviceOpen(...)
-    # 2. Configure o Osciloscópio (Acquisition): dwf.FDwfAnalogInConfigure(hdwf, 0, 1)
-    # 3. Adquira os dados: dwf.FDwfAnalogInStatusData(...)
-    # 4. Ajuste a taxa de amostragem e tempo no setup do AD.
+
     
     recorded_signal = sd.rec(num_amostras, FS, channels=1, dtype='float64')
     sd.wait()
@@ -48,7 +42,7 @@ def receiver_main():
     peak_freqs, peak_mags = find_prominent_peaks(freqs_fft, magnitude, min_peak_count=5)
     
     # 3. Mapear para o acorde
-    acorde_identificado, score = map_peaks_to_chord(peak_freqs, ACCORDS, tolerance=5.0)
+    acorde_identificado, score = map_peaks_to_chord(peak_freqs, ACCORDS, tolerance=2.0)
 
     # 4. Plotar os resultados
     plot_time_and_spectrum(t_rec, x_rec, FS, freqs_fft, magnitude, magnitude_db, 

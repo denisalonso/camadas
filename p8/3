@@ -1,0 +1,49 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.fft import fft, fftfreq
+
+# --- Parâmetros do Ex. 2 & 3 ---
+Fs = 44100
+T = 2.0
+t = np.linspace(0.0, T, int(Fs * T), endpoint=False)
+
+Fm = 2000   # 2 kHz
+Fc = 15000  # 15 kHz (Portadora)
+# Resultado esperado: Bandas em 13 kHz e 17 kHz
+
+# --- Funções Auxiliares (Reutilizadas) ---
+def gerar_sinal_informacao(t, freq):
+    return 0.5 * np.cos(2 * np.pi * freq * t)
+
+def gerar_portadora(t, fc):
+    return 1.0 * np.sin(2 * np.pi * fc * t)
+
+def plotar_espectro_fft(sinal, Fs, titulo, cor='blue'):
+    N = len(sinal)
+    yf = fft(sinal)
+    xf = fftfreq(N, 1/Fs)
+    xf_positive = xf[:N//2]
+    yf_positive = 2.0/N * np.abs(yf[:N//2])
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(xf_positive / 1000, yf_positive, color=cor)
+    plt.title(titulo)
+    plt.xlabel('Frequência (kHz)')
+    plt.ylabel('Magnitude |Y(f)|')
+    plt.grid()
+    plt.xlim(0, 20)
+    plt.show()
+
+# --- Execução do Ex. 3 ---
+m_t = gerar_sinal_informacao(t, Fm)
+C_t = gerar_portadora(t, Fc)
+
+# Modulação AM (Multiplicação)
+S_modulado_t = m_t * C_t
+
+print("--- Execução do Exercício 3: Modulação AM (Multiplicação) ---")
+print(f"Sinal de Informação (Fm): {Fm/1000:.1f} kHz")
+print(f"Portadora (Fc): {Fc/1000:.1f} kHz")
+print(f"[Ex. 2] Banda Mínima Esperada: 13 kHz a 17 kHz.")
+
+plotar_espectro_fft(S_modulado_t, Fs, f'Ex. 3: Espectro do Sinal AM Modulado (Picos em 13 kHz e 17 kHz)', cor='green')

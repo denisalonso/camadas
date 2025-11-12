@@ -13,14 +13,14 @@ def main():
     Q_valor = 1
     duration = 4  # segundos
     print('equalizador iniciado!')
-    frequencias = np.array([20, 32, 64, 125, 250, 500,
+    frequencias = np.array([20, 32, 64, 125, 250, 500, #pq esses valores de frequencia?
                             1000, 2000, 4000, 8000, 16000, 32000])
     print('preset: [0,0,8,3,10,-20,-20,-20,0,10,5,0]')
     preset = input('usar preset de equalizacao? [y/n] ')
     while preset not in ['y','n']:
         preset = input('responda entre "y" e "n" ')
     if preset == 'y':
-        ganhos_db = np.array([0,0,8,3,10,-20,-20,-20,0,10,5,0])
+        ganhos_db = np.array([0,0,8,3,10,-20,-20,-20,0,10,5,0])#pq esses valores de ganho?
     else:
         ganhos_db = []
         for f in frequencias:

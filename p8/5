@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter
+from scipy.fft import fft, fftfreq
+import sounddevice as sd
+
+# --- Parâmetros do Ex. 5 (Baseados nos Ex. 2 e 3) ---
+Fs = 44100
+T = 2.0
+t = np.linspace(0.0, T, int(Fs * T), endpoint=False)
+
+Fm_demo = 2000   # 2 kHz (Frequência do áudio a ser recuperado)
+Fc_demo = 15000  # 15 kHz (Portadora usada na modulação)
+
+# --- Funções Auxiliares (Reutilizadas) ---
+def gerar_sinal_informacao(t, freq):
+    return 0.5 * np.cos(2 * np.pi * freq * t)
+
+def gerar_portadora(t, fc):
+    return 1.0 * np.sin(2 * np.pi * fc * t)
+
+def filtro_passa_baixa(sinal, corte_hz, Fs, ordem=5):
+    nyquist = 0.5 * Fs
+    corte_normalizado = corte_hz / nyquist
+    b, a = butter(ordem, corte_normalizado, btype='low', analog=False)
+    y = lfilter(b, a, sinal)
+    return y
+
+def plotar_espectro_fft(sinal, Fs, titulo, cor='blue'):
+    N = len(sinal)
+    yf = fft(sinal)
+    xf = fftfreq(N, 1/Fs)
+    xf_positive = xf[:N//2]
+    yf_positive = 2.0/N * np.abs(yf[:N//2])
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(xf_positive / 1000, yf_positive, color=cor)
+    plt.title(titulo)
+    plt.xlabel('Frequência (kHz)')
+    plt.ylabel('Magnitude |Y(f)|')
+    plt.grid()
+    plt.xlim(0, 20)
+    plt.show()
+
+# --- Execução do Ex. 5 ---
+
+# 1. FASE DE TRANSMISSÃO (Simulação)
+m_t_original = gerar_sinal_informacao(t, Fm_demo)
+C_t = gerar_portadora(t, Fc_demo)
+S_modulado_t = m_t_original * C_t # Sinal transmitido
+
+# 2. FASE DE RECEPÇÃO/DEMODULAÇÃO
+# Passo 2a: Multiplicação pela Portadora (Demodulação Síncrona)
+S_multiplicado = S_modulado_t * C_t
+
+# Passo 2b: Filtragem Passa-Baixa (Frequência de corte > Fm_demo, ex: 2.5 kHz)
+m_t_recuperado = filtro_passa_baixa(S_multiplicado, 2500, Fs)
+
+print("--- Execução do Exercício 5: Demodulação Síncrona ---")
+print(f"Sinal Modulado em: {Fc_demo/1000} kHz.")
+print(f"Sinal Recuperado (após filtro em 2.5 kHz) deve ter espectro em baixa frequência.")
+
+# Gráfico 1: Sinal Modulado (para referência)
+plotar_espectro_fft(S_modulado_t, Fs, 'Sinal Modulado (Espectro em Alta Frequência)', cor='red')
+
+# Gráfico 2: Sinal Recuperado
+plotar_espectro_fft(m_t_recuperado, Fs, 'Sinal Demodulado (Espectro Recuperado em Baixa Frequência)', cor='purple')
+
+# Opcional: Reprodução do áudio recuperado (requer hardware de áudio configurado)
+# print("\nReproduzindo áudio original (sintético)...")
+# sd.play(m_t_original, Fs)
+# sd.wait()
+# print("Reproduzindo áudio demodulado (deve ser o mesmo som)...")
+# sd.play(m_t_recuperado * 5, Fs) # Multiplicado para aumentar o volume
+# sd.wait()

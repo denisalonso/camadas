@@ -1,4 +1,4 @@
-# emissor.py
+# emissor.py4
 import numpy as np
 import sounddevice as sd
 import matplotlib.pyplot as plt
@@ -48,15 +48,7 @@ def emitter_main():
 
     # 3. Emitir o áudio
     print(f"\nReproduzindo o acorde {nome_acorde} em {FS} Hz ({DURATION}s)...")
-    
-    # COMENTÁRIO PARA ADAPTAÇÃO AO ANALOG DISCOVERY (EMISSOR/AWG)
-    #
-    # Se for usar o Analog Discovery:
-    # 1. Inicialize a biblioteca DWF: hdwf = dwf.Dwf(...); dwf.FDwfDeviceOpen(...)
-    # 2. Configure o AWG: dwf.FDwfAnalogOutNodeEnable(hdwf, channel, 1)
-    # 3. Defina o sinal: dwf.FDwfAnalogOutNodeNodeSet(hdwf, channel, dwf.DwfAnalogOutNodeCarrier, np.array(x))
-    # 4. Execute: dwf.FDwfAnalogOutConfigure(hdwf, channel, 1)
-    # 5. Use time.sleep(DURATION) em vez de sd.wait()
+
     
     sd.play(x, FS)
     sd.wait() # Aguarda o fim da reprodução
