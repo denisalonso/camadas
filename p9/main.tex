@@ -1,0 +1,139 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+
+\usepackage[a4paper, top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+\usepackage{amsmath}
+
+
+\title{\textbf{The Engineering of Digital Audio Equalizers with Python}}
+\author{
+Denis Gonçalves Alonso\\ 
+\small denisga@al.insper.edu.br \\[6pt]
+Maria Eduarda Barbosa Dos Santos\\
+\small mariaebs@al.insper.edu.br\\[10pt]
+\small Computational Engineering \\ 
+\small Instituto de Ensino e Pesquisa - Insper
+}
+
+\date{November 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Equalization is one of the most fundamental processes in audio engineering, used to shape the tonal balance of a sound by adjusting the amplitude of specific frequency bands \cite{reiss2011parametric}. Historically implemented with analog circuitry based on resistors, capacitors, and inductors, modern equalization techniques rely on digital signal processing (DSP) to achieve greater flexibility and precision. Furthermore, these implementations use efficient IIR filter structures, which provide precise frequency control with low computational cost \cite{cecchi2013iir}. Digital equalizers can be implemented in software or hardware, enabling musicians, sound designers, and communication engineers to manipulate sound in real time with minimal distortion.
+
+A digital audio equalizer operates by decomposing an audio signal into frequency components and applying gain or attenuation through filters such as low-pass, high-pass, band-pass, and parametric (peaking) filters. This project focuses on the design and implementation of a twelve-band parametric equalizer using IIR biquad filters. The system allows fine control of gain and bandwidth across the audible spectrum, providing an efficient solution for sound enhancement and noise reduction.
+
+\section{Types of Filters}
+Digital filters are systems designed to process discrete-time signals, modifying or extracting specific frequency components. In practical terms, they act like a “sieve,” allowing certain frequency ranges to pass while attenuating or blocking others. Depending on which frequencies are preserved or suppressed, filters can be classified into different categories.
+\subsection{Basic Filters}
+\begin{itemize}
+\item \textbf{Low-Pass Filters (LPF)} allow low-frequency components of a signal to pass through while attenuating those above a certain threshold, known as the cutoff frequency. These filters are commonly used to remove high-frequency noise from signals that primarily contain low-frequency content, such as speech or musical bass tones. In audio applications, a low-pass filter smooths harsh sounds and reduces hiss or high-pitched artifacts.
+\item \textbf{High-Pass Filters (HPF)} perform the opposite operation: they allow high-frequency components to pass and attenuate frequencies below the cutoff point. This type of filter is often employed to remove unwanted low-frequency noise, such as microphone rumble or background hum, and to emphasize treble or percussive elements in an audio signal.
+\item \textbf{Band-Pass Filters (BPF)} combine the properties of low-pass and high-pass filters. They allow only a specific range of frequencies to pass—those between a lower and an upper cutoff frequency—while attenuating all others. Band-pass filters are widely used in equalizers and communication systems to isolate particular spectral regions, such as the human voice band or musical instruments’ characteristic frequencies.
+\end{itemize}
+Together, these three filter types form the foundation of digital signal processing and serve as the building blocks for complex systems like equalizers. By cascading multiple filters, it becomes possible to amplify or attenuate specific frequency bands, shaping the tonal balance of an audio signal precisely.
+
+\subsection{Notch and Peaking Filters}
+
+Another important category of digital filters includes \textbf{notch} and \textbf{peaking} filters, which operate on specific frequency bands with high precision.
+
+A \textbf{Notch Filter}---also called a band-reject or band-stop filter---removes a narrow range of frequencies centered around a chosen frequency $f_0$, while allowing all other frequencies to pass with minimal alteration. These filters are especially useful for eliminating unwanted tones or interference, such as the 60~Hz hum commonly found in power lines or feedback peaks in audio systems. By setting a narrow rejection bandwidth, a notch filter can suppress the undesired component without affecting the surrounding spectral content.
+
+Conversely, a \textbf{Peaking Filter} (or \textbf{Parametric EQ}) does not reject a frequency range but rather \textit{amplifies or attenuates} it by a specific amount, expressed in decibels (dB). This filter type is the foundation of modern \textbf{graphic and parametric equalizers}, where each band can be individually tuned. The peaking filter’s response curve is characterized by three parameters:
+\begin{itemize}
+    \item The \textbf{center frequency} $f_0$, which defines the midpoint of the affected band;
+    \item The \textbf{gain} $G$, determining how much the band is boosted or cut;
+    \item The \textbf{quality factor} $Q$, which controls the \textbf{bandwidth} of the effect.
+\end{itemize}
+
+The \textbf{Quality Factor} $Q$ is a dimensionless measure that defines the filter’s selectivity. A high $Q$ value corresponds to a narrow bandwidth, meaning the filter affects a small range of frequencies around $f_0$. This setting is ideal for precise adjustments, such as removing resonant peaks or correcting specific tonal issues. A low $Q$ value widens the bandwidth, producing a smoother and more gradual effect that impacts a broader portion of the spectrum---useful for general tonal shaping.
+
+In digital equalizers, combining multiple peaking and notch filters in cascade allows complex frequency response shaping, achieving detailed tonal balance adjustments while maintaining computational efficiency.
+
+\section{Equalizer}
+
+The development of the digital equalizer was based on the implementation of twelve parametric filters (biquad IIR sections) applied in cascade. Each filter is characterized by its central frequency $f_0$, quality factor $Q$, and gain $G$ (in decibels). The equalizer was implemented using Python and the scientific libraries \texttt{NumPy}, \texttt{SciPy}, and \texttt{Matplotlib}, following the design criteria proposed in the project.
+
+\subsection{Digital Filter Representation}
+
+A digital filter can be represented by a discrete transfer function relating the output signal $Y[k]$ to the input signal $X[k]$. For a general second-order filter, this relation is given by:
+
+\begin{equation}
+H(z) = \frac{Y(z)}{X(z)} = \frac{b_0 + b_1 z^{1} + b_2 z^{2}}{1 + a_1 z^{1} + a_2 z^{2}}.
+\label{eq:biquad}
+\end{equation}
+
+The coefficients $b_i$ and $a_i$ define the frequency response and stability of the filter.  
+The filter type (low-pass, high-pass, peaking, etc.) depends directly on how these coefficients are computed.
+
+\subsection{Peaking Equalizer Design}
+
+For a parametric or \textit{peak} equalizer, the coefficients are determined from the desired gain $G$ (in dB), the center frequency $f_0$, and the quality factor $Q$.  
+Using the relations described by Dattorro (2003), the filter coefficients are obtained as:
+
+\begin{align}
+A &= 10^{G/40}, \\
+\omega_0 &= 2\pi \frac{f_0}{f_s}, \\
+\alpha &= \frac{\sin(\omega_0)}{2Q}, \\
+b_0 &= 1 + \alpha A, \quad b_1 = -2\cos(\omega_0), \quad b_2 = 1 - \alpha A, \\
+a_0 &= 1 + \frac{\alpha}{A}, \quad a_1 = -2\cos(\omega_0), \quad a_2 = 1 - \frac{\alpha}{A}.
+\end{align}
+
+Finally, the normalized coefficients used in Equation~\ref{eq:biquad} are given by:
+\begin{equation}
+b_i' = \frac{b_i}{a_0}, \quad a_i' = \frac{a_i}{a_0}.
+\label{eq:coeff_norm}
+\end{equation}
+
+\subsection{Implementation and Cascade Combination}
+
+The output signal of the equalizer was computed by sequentially applying each of the 12 biquad filters to the input signal, as shown below:
+\begin{equation}
+y[k] = lfilter(b_{12}, a_{12}, \dots lfilter(b_2, a_2, lfilter(b_1, a_1, x[k]))).
+\label{eq:cascade}
+\end{equation}
+
+Each section modifies a specific frequency band according to user-defined gains.  
+After filtering, the resulting signal was normalized to prevent amplitude clipping, and both original and processed audios were played for auditory comparison.
+
+\subsection{Bode Plot and Frequency Response}
+
+To analyze the overall response of the system, the total transfer function was obtained by convolution of the individual numerator and denominator coefficients of each biquad section:
+\begin{equation}
+B_{total}(z) = b_1(z) * b_2(z) * \dots * b_{12}(z), \quad
+A_{total}(z) = a_1(z) * a_2(z) * \dots * a_{12}(z).
+\label{eq:conv}
+\end{equation}
+
+The resulting transfer function $H_{total}(z) = \frac{B_{total}(z)}{A_{total}(z)}$ was then used to compute the Bode diagram, illustrating the gain of the equalizer in dB in the frequency spectrum. The plot confirms the expected behavior of each frequency band, with localized boosts and cuts according to the preset configuration.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=1\linewidth]{bode_example.jpg}
+\caption{Example of a Bode diagram obtained from the 12-band digital equalizer. 
+The plot shows the gain response (in dB) across the audible frequency spectrum.}
+\label{fig:bode}
+\end{figure}
+
+\section{Conclusion}
+
+The implementation of a 12-band digital audio equalizer successfully demonstrated the principles of digital filtering and frequency-domain signal processing. By combining multiple peaking filters in cascade, it was possible to control the tonal balance of an audio signal, allowing the amplification or attenuation of specific frequency ranges with precision. The comparison between the original and filtered sounds confirmed the expected behavior of the designed filters, as observed in both the time and frequency domains.
+
+The use of biquad IIR sections proved to be computationally efficient while maintaining smooth and stable responses across the audible spectrum. The Bode diagram of the system revealed the contribution of each individual filter to the overall frequency response, highlighting the flexibility of the digital design.
+
+However, for a high-performance equalizer, each frequency band should employ a different \textbf{quality factor} ($Q$). In this project, all filters shared the same $Q$ value for simplicity, resulting in identical bandwidths throughout the spectrum. In practice, the perception of sound is non-linear with respect to frequency: lower frequencies require broader bandwidths, while higher frequencies benefit from narrower, more selective bands. Adjusting $Q$ according to the position of the band ensures smoother transitions between filters, minimizes overlap or spectral gaps, and provides a more natural and perceptually uniform equalization curve.
+The 12-band digital equalizer implemented in this project effectively demonstrated how IIR biquad filters can be used to control the tonal balance of an audio signal. 
+The approach is computationally efficient and easily extendable to real-time applications \cite{cecchi2013iir}. 
+However, for a high-performance equalizer, each frequency band should employ a distinct quality factor $Q$, since auditory perception varies across the spectrum: lower frequencies benefit from broader bandwidths, while higher frequencies require narrower and more selective ones \cite{reiss2011parametric, vairetti2018automatic}. 
+Future work may include adaptive control of $Q$ values or perceptual weighting based on psychoacoustic models.
+
+Future improvements may include dynamic control of $Q$ based on psychoacoustic models or adaptive algorithms that automatically tune the equalizer parameters in real time according to the characteristics of the input signal.
+
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+\end{document}
